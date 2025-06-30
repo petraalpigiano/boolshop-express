@@ -1,8 +1,8 @@
-import connection from "../data/db.js";
+// import connection from "../data/db.js";
 
 // INDEX
 function index(req, res) {
-  const sqlMovies = `SELECT * FROM movies`;
+  const sqlMovies = `SELECT * FROM clothes`;
   connection.query(sqlMovies, (err, results) => {
     if (err)
       return res.status(500).json({
@@ -18,7 +18,7 @@ function index(req, res) {
 // SHOW
 function show(req, res) {
   const id = parseInt(req.params.id);
-  const sqlMovies = `SELECT * FROM movies WHERE movies.id =? `;
+  const sqlMovies = `SELECT * clothes movies WHERE movies.id =? `;
   const sqlReviews = `SELECT name, vote, text, reviews.created_at, reviews.updated_at FROM movies INNER JOIN reviews ON movies.id = reviews.movie_id WHERE movies.id = ? `;
 
   connection.query(sqlMovies, [id], (err, results) => {
