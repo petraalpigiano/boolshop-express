@@ -1,5 +1,5 @@
 import express from "express";
-import moviesRouter from "./routers/clothes.js";
+import clothesRouter from "./routers/clothes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import notFoundHandler from "./middlewares/notFoundHandler.js";
 import cors from "cors";
@@ -28,7 +28,12 @@ app.listen(APP_PORT, () => {
 });
 
 // POST ROUTER
-app.use("/movies", moviesRouter);
+app.use("/clothes", clothesRouter);
+
+// INDEX/HOMEPAGE
+app.get("/", (req, res) => {
+  res.send("homepage funziona");
+});
 
 // MIDDLEWARE PER LA GESTIONE DEGLI ERRORI DEL SERVER
 app.use(errorHandler);
