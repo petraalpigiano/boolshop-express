@@ -18,7 +18,18 @@ import connection from "../data/db.js";
 
 // INDEX/CLOTHES LIST
 function index(req, res) {
-  res.send("index funziona");
+  const sqlClothes = `SELECT * FROM clothes`;
+  connection.query(sqlClothes, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
 }
 // SHOW/ CLOTH DETAILS
 function show(req, res) {
