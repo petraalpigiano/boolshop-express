@@ -1,5 +1,5 @@
 import express from "express";
-import moviesRouter from "./routers/movies.js";
+import moviesRouter from "./routers/clothes.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import notFoundHandler from "./middlewares/notFoundHandler.js";
 import cors from "cors";
