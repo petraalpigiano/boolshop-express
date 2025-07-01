@@ -35,9 +35,9 @@ function index(req, res) {
 
 // SHOW/ CLOTH DETAILS
 function show(req, res) {
-  const id = parseInt(req.params.id);
+  const slug = req.params.slug;
   // ex QUERY PER VESTITO SPECIFICO
-  const sqlClothes = `SELECT * FROM clothes WHERE clothes.id =? `;
+  const sqlClothes = `SELECT * FROM clothes WHERE clothes.slug = ?  `;
   // ex QUERY PER TAGLIE
   const sqlSizes = `SELECT sizes.name
 FROM clothes
@@ -56,7 +56,7 @@ ON clothes.categories_id = categories.id
 WHERE clothes.id = ?`;
 
   // ex DETTAGLIO VESTITO SPECIFICO
-  connection.query(sqlClothes, [id], (err, results) => {
+  connection.query(sqlClothes, [slug], (err, results) => {
     if (err)
       return res.status(500).json({
         error: "Richiesta fallita!",
