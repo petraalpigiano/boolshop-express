@@ -32,6 +32,7 @@ function index(req, res) {
     res.json(results);
   });
 }
+
 // SHOW/ CLOTH DETAILS
 function show(req, res) {
   const id = parseInt(req.params.id);
