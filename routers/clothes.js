@@ -5,8 +5,6 @@ import { index, show } from "../controllers/clothController.js";
 const router = express.Router();
 
 // VARIE ROUTE
-// INDEX/HOMEPAGE
-// app.get("/", homepage);
 // INDEX/CLOTHES LIST
 router.get("/", index);
 // SHOW/ CLOTH DETAILS
