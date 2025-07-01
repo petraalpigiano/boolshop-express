@@ -71,7 +71,47 @@ LIMIT 3`;
     res.json(results);
   });
 });
-// INDEX (POI SARA UNA POST)/ CHECKOUT
+// CREATE/ CHECKOUT
+app.get("/checkout", (req, res) => {
+  //  const id = parseInt(req.params.id);
+  // const vote = parseInt(req.body.vote);
+  const { name, surname, mail, address, cell_number, city, cap } = req.body;
+  // ex QUERY PER INVIO DATI GUEST
+  const sqlCheckout = `
+  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  // // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
+  // const sqlOrderId = `INSERT INTO clothes.clothes_orders (cloth_id) VALUES (?);`;
+  // ex INVIO DATI GUEST
+  connection.query(
+    sqlCheckout,
+    [name, surname, mail, address, cell_number, city, cap],
+    (err, results) => {
+      if (err)
+        return res.status(500).json({
+          message: "Richiesta fallita!",
+          err,
+        });
+
+      res.status(201).json({
+        message: "Ordine inviato con successo",
+        id: results.insertId,
+      });
+    }
+  );
+  // // ex INSERIMENTO ID
+  // connection.query(sqlOrderId, [], (err, results) => {
+  //   if (err)
+  //     return res.status(500).json({
+  //       message: "Richiesta fallita!",
+  //       err,
+  //     });
+
+  //   res.status(201).json({
+  //     message: "Ordine ID inserito con successo",
+  //     id: results.insertId,
+  //   });
+  // });
+});
 
 // MIDDLEWARE PER LA GESTIONE DEGLI ERRORI DEL SERVER
 app.use(errorHandler);

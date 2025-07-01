@@ -10,6 +10,6 @@ const router = express.Router();
 // INDEX/CLOTHES LIST
 router.get("/", index);
 // SHOW/ CLOTH DETAILS
-router.get("/:id", show);
+router.get("/:slug", show);
 
 export default router;

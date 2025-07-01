@@ -45,7 +45,7 @@ INNER JOIN clothes_sizes
 ON clothes.id = clothes_sizes.cloth_id
 INNER JOIN sizes
 ON clothes_sizes.size_id = sizes.id
-WHERE clothes.id = ?`;
+WHERE clothes.slug = ?`;
 
   // ex QUERY PER CATEGORIA
   const sqlCategory = `
@@ -53,7 +53,7 @@ SELECT categories.name
 FROM clothes
 INNER JOIN categories
 ON clothes.categories_id = categories.id
-WHERE clothes.id = ?`;
+WHERE clothes.slug = ?`;
 
   // ex DETTAGLIO VESTITO SPECIFICO
   connection.query(sqlClothes, [slug], (err, results) => {
@@ -62,7 +62,7 @@ WHERE clothes.id = ?`;
         error: "Richiesta fallita!",
       });
     if (results.length === 0) {
-      return res.status(404).json({ error: "Clothes not found!" });
+      return res.status(404).json({ error: "Cloth not found!" });
     }
     results.map(function (currentCloth) {
       return (currentCloth.img =
@@ -70,18 +70,18 @@ WHERE clothes.id = ?`;
     });
     const cloth = results[0];
     // ex TAGLIE DEL VESTITO SPECIFICO
-    connection.query(sqlSizes, [id], (err, results) => {
+    connection.query(sqlSizes, [slug], (err, results) => {
       if (err)
         return res.status(500).json({
-          error: "Richiesta fallita!",
+          error: "Sizes not found!",
         });
       cloth.sizes = results;
     });
     // ex CATEGORIA DEL VESTITO SPECIFICO
-    connection.query(sqlCategory, [id], (err, results) => {
+    connection.query(sqlCategory, [slug], (err, results) => {
       if (err)
         return res.status(500).json({
-          error: "Richiesta fallita!",
+          error: "Category not found!",
         });
       cloth.category = results;
       res.json(cloth);
