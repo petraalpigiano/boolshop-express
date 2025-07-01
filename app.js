@@ -28,8 +28,12 @@ app.listen(APP_PORT, () => {
   console.log(`Il server è in ascolto alla porta: ${APP_PORT}`);
 });
 
-// POST ROUTER
+// CLOTHES ROUTER
 app.use("/clothes", clothesRouter);
+// HOMEPAGE ROUTER
+app.use("/homepage", homepageRouter);
+// GUESTS ROUTER
+app.use("/guest", guestsRouter);
 
 // INDEX/PROMO CLOTHES
 app.get("/promo", (req, res) => {
