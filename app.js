@@ -43,6 +43,10 @@ WHERE clothes.promo > 0;`;
       return res.status(500).json({
         error: "Richiesta fallita!",
       });
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
     res.json(results);
   });
 });
@@ -60,9 +64,14 @@ LIMIT 3`;
       return res.status(500).json({
         error: "Richiesta fallita!",
       });
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
     res.json(results);
   });
 });
+// INDEX (POI SARA UNA POST)/ CHECKOUT
 
 // MIDDLEWARE PER LA GESTIONE DEGLI ERRORI DEL SERVER
 app.use(errorHandler);
