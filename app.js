@@ -1,10 +1,11 @@
 import express from "express";
 import clothesRouter from "./routers/clothes.js";
+import homepageRouter from "./routers/homepage.js";
+import guestsRouter from "./routers/guests.js";
 import errorHandler from "./middlewares/errorHandler.js";
 import notFoundHandler from "./middlewares/notFoundHandler.js";
 import cors from "cors";
 import "dotenv/config";
-import connection from "./data/db.js";
 
 // ENV
 const { APP_PORT } = process.env;
@@ -28,50 +29,12 @@ app.listen(APP_PORT, () => {
   console.log(`Il server è in ascolto alla porta: ${APP_PORT}`);
 });
 
-// POST ROUTER
+// HOMEPAGE ROUTER
+app.use("/homepage", homepageRouter);
+// CLOTHES ROUTER
 app.use("/clothes", clothesRouter);
-
-// INDEX/PROMO CLOTHES
-app.get("/promo", (req, res) => {
-  // ex QUERY PER PROMO
-  const sqlPromo = `SELECT *
-FROM clothes
-WHERE clothes.promo > 0;`;
-  // ex VESTITI IN PROMO
-  connection.query(sqlPromo, (err, results) => {
-    if (err)
-      return res.status(500).json({
-        error: "Richiesta fallita!",
-      });
-    results.map(function (currentCloth) {
-      return (currentCloth.img =
-        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
-    });
-    res.json(results);
-  });
-});
-
-// INDEX/ MOST SOLD
-app.get("/most-sold", (req, res) => {
-  // ex QUERY PER MOST SOLD
-  const sqlMostSold = `SELECT *
-FROM clothes
-ORDER BY clothes.sold_number DESC
-LIMIT 3`;
-  // ex VESTITI PIU VENDUTI
-  connection.query(sqlMostSold, (err, results) => {
-    if (err)
-      return res.status(500).json({
-        error: "Richiesta fallita!",
-      });
-    results.map(function (currentCloth) {
-      return (currentCloth.img =
-        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
-    });
-    res.json(results);
-  });
-});
-// INDEX (POI SARA UNA POST)/ CHECKOUT
+// GUESTS ROUTER
+app.use("/guest", guestsRouter);
 
 // MIDDLEWARE PER LA GESTIONE DEGLI ERRORI DEL SERVER
 app.use(errorHandler);

@@ -1,13 +1,13 @@
 import express from "express";
-import { index, show } from "../controllers/clothController.js";
+import { promo, mostSold } from "../controllers/clothController.js";
 
 // ROUTER
 const router = express.Router();
 
 // VARIE ROUTE
 // INDEX/CLOTHES LIST
-router.get("/", index);
+router.get("/promo", promo);
 // SHOW/ CLOTH DETAILS
-router.get("/:slug", show);
+router.get("/most-sold", mostSold);
 
 export default router;

@@ -1,20 +1,45 @@
 import connection from "../data/db.js";
 
-// INDEX/HOMEPAGE
-// function homepage(req, res) {
-//   // const sqlClothes = `SELECT * FROM movies`;
-//   // connection.query(sqlClothes, (err, results) => {
-//   //   if (err)
-//   //     return res.status(500).json({
-//   //       error: "Richiesta fallita!",
-//   //     });
-//   //   results.map(function (currentCloth) {
-//   //     return (currentCloth.image =
-//   //       "http://localhost:3000/imgs/movies_cover/" + currentCloth.image);
-//   //   });
-//   //   res.json(results);
-//   // });
-// }
+// INDEX/PROMO CLOTHES
+function promo(req, res) {
+  // ex QUERY PER PROMO
+  const sqlPromo = `SELECT *
+FROM clothes
+WHERE clothes.promo > 0;`;
+  // ex VESTITI IN PROMO
+  connection.query(sqlPromo, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
+
+// INDEX/MOST SOLD
+function mostSold(req, res) {
+  // ex QUERY PER MOST SOLD
+  const sqlMostSold = `SELECT *
+FROM clothes
+ORDER BY clothes.sold_number DESC
+LIMIT 3`;
+  // ex VESTITI PIU VENDUTI
+  connection.query(sqlMostSold, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
 
 // INDEX/CLOTHES LIST
 function index(req, res) {
@@ -33,11 +58,11 @@ function index(req, res) {
   });
 }
 
-// SHOW/ CLOTH DETAILS
+// SHOW/CLOTH DETAILS
 function show(req, res) {
-  const id = parseInt(req.params.id);
+  const slug = req.params.slug;
   // ex QUERY PER VESTITO SPECIFICO
-  const sqlClothes = `SELECT * FROM clothes WHERE clothes.id =? `;
+  const sqlClothes = `SELECT * FROM clothes WHERE clothes.slug = ?  `;
   // ex QUERY PER TAGLIE
   const sqlSizes = `SELECT sizes.name
 FROM clothes
@@ -45,7 +70,7 @@ INNER JOIN clothes_sizes
 ON clothes.id = clothes_sizes.cloth_id
 INNER JOIN sizes
 ON clothes_sizes.size_id = sizes.id
-WHERE clothes.id = ?`;
+WHERE clothes.slug = ?`;
 
   // ex QUERY PER CATEGORIA
   const sqlCategory = `
@@ -53,16 +78,16 @@ SELECT categories.name
 FROM clothes
 INNER JOIN categories
 ON clothes.categories_id = categories.id
-WHERE clothes.id = ?`;
+WHERE clothes.slug = ?`;
 
   // ex DETTAGLIO VESTITO SPECIFICO
-  connection.query(sqlClothes, [id], (err, results) => {
+  connection.query(sqlClothes, [slug], (err, results) => {
     if (err)
       return res.status(500).json({
         error: "Richiesta fallita!",
       });
     if (results.length === 0) {
-      return res.status(404).json({ error: "Clothes not found!" });
+      return res.status(404).json({ error: "Cloth not found!" });
     }
     results.map(function (currentCloth) {
       return (currentCloth.img =
@@ -70,18 +95,18 @@ WHERE clothes.id = ?`;
     });
     const cloth = results[0];
     // ex TAGLIE DEL VESTITO SPECIFICO
-    connection.query(sqlSizes, [id], (err, results) => {
+    connection.query(sqlSizes, [slug], (err, results) => {
       if (err)
         return res.status(500).json({
-          error: "Richiesta fallita!",
+          error: "Sizes not found!",
         });
       cloth.sizes = results;
     });
     // ex CATEGORIA DEL VESTITO SPECIFICO
-    connection.query(sqlCategory, [id], (err, results) => {
+    connection.query(sqlCategory, [slug], (err, results) => {
       if (err)
         return res.status(500).json({
-          error: "Richiesta fallita!",
+          error: "Category not found!",
         });
       cloth.category = results;
       res.json(cloth);
@@ -89,4 +114,45 @@ WHERE clothes.id = ?`;
   });
 }
 
-export { index, show };
+// CREATE/CHECKOUT
+function checkout(req, res) {
+  //  const id = parseInt(req.params.id);
+  // const vote = parseInt(req.body.vote);
+  const { name, surname, mail, address, cell_number, city, cap } = req.body;
+  // ex QUERY PER INVIO DATI GUEST
+  const sqlCheckout = `
+  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  // // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
+  // const sqlOrderId = `INSERT INTO clothes.clothes_orders (cloth_id) VALUES (?);`;
+  // ex INVIO DATI GUEST
+  connection.query(
+    sqlCheckout,
+    [name, surname, mail, address, cell_number, city, cap],
+    (err, results) => {
+      if (err)
+        return res.status(500).json({
+          message: "Richiesta fallita!",
+          err,
+        });
+
+      res.status(201).json({
+        message: "Ordine inviato con successo",
+        id: results.insertId,
+      });
+    }
+  );
+  // // ex INSERIMENTO ID
+  // connection.query(sqlOrderId, [], (err, results) => {
+  //   if (err)
+  //     return res.status(500).json({
+  //       message: "Richiesta fallita!",
+  //       err,
+  //     });
+
+  //   res.status(201).json({
+  //     message: "Ordine ID inserito con successo",
+  //     id: results.insertId,
+  //   });
+  // });
+}
+export { index, show, promo, mostSold, checkout };
