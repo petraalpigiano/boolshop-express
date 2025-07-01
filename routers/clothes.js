@@ -5,9 +5,11 @@ import { index, show } from "../controllers/clothController.js";
 const router = express.Router();
 
 // VARIE ROUTE
-// INDEX
+// INDEX/HOMEPAGE
+// app.get("/", homepage);
+// INDEX/CLOTHES LIST
 router.get("/", index);
-// SHOW
+// SHOW/ CLOTH DETAILS
 router.get("/:id", show);
 
 export default router;
