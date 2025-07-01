@@ -122,8 +122,11 @@ function checkout(req, res) {
   // ex QUERY PER INVIO DATI GUEST
   const sqlCheckout = `
   INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-  // // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
-  // const sqlOrderId = `INSERT INTO clothes.clothes_orders (cloth_id) VALUES (?);`;
+  // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
+  const sqlOrderId = `INSERT INTO clothes_orders(order_id)
+SELECT orders.id
+FROM orders
+WHERE orders.name = ? AND orders.surname = ?`;
   // ex INVIO DATI GUEST
   connection.query(
     sqlCheckout,
@@ -141,18 +144,13 @@ function checkout(req, res) {
       });
     }
   );
-  // // ex INSERIMENTO ID
-  // connection.query(sqlOrderId, [], (err, results) => {
-  //   if (err)
-  //     return res.status(500).json({
-  //       message: "Richiesta fallita!",
-  //       err,
-  //     });
-
-  //   res.status(201).json({
-  //     message: "Ordine ID inserito con successo",
-  //     id: results.insertId,
-  //   });
-  // });
+  // ex INSERIMENTO ID
+  connection.query(sqlOrderId, [name, surname], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        message: "Richiesta fallita!",
+        err,
+      });
+  });
 }
 export { index, show, promo, mostSold, checkout };
