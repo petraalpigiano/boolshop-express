@@ -6,6 +6,6 @@ const router = express.Router();
 
 // VARIE ROUTE
 // INDEX/CLOTHES LIST
-router.get("/checkout", checkout);
+router.post("/checkout", checkout);
 
 export default router;
