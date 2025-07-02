@@ -30,7 +30,7 @@ app.listen(APP_PORT, () => {
 });
 
 // HOMEPAGE ROUTER
-app.use("/homepage", homepageRouter);
+app.use("/", homepageRouter);
 // CLOTHES ROUTER
 app.use("/clothes", clothesRouter);
 // GUESTS ROUTER
