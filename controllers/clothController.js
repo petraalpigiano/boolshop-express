@@ -126,7 +126,7 @@ function checkout(req, res) {
   const sqlOrderId = `INSERT INTO clothes_orders(order_id)
 SELECT orders.id
 FROM orders
-WHERE orders.name = ? AND orders.surname = ?`;
+WHERE orders.id = LAST_INSERT_ID()`;
   // ex INVIO DATI GUEST
   connection.query(
     sqlCheckout,
