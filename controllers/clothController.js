@@ -10,11 +10,12 @@ function promo(req, res) {
   c.img,
   c.promo,
   c.slug,
+   c.stock,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
-GROUP BY c.id, c.name, c.price, c.img
+GROUP BY c.id, c.name, c.price, c.img, c.stock
 HAVING c.promo > 0`;
   // ex VESTITI IN PROMO
   connection.query(sqlSizesPromo, (err, results) => {
@@ -40,11 +41,12 @@ function mostSold(req, res) {
   c.img,
   c.sold_number,
   c.slug,
+  c.stock,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
-GROUP BY c.id, c.name, c.price, c.img
+GROUP BY c.id, c.name, c.price, c.img, c.stock
 ORDER BY c.sold_number DESC
 LIMIT 3`;
   // ex VESTITI PIU VENDUTI
