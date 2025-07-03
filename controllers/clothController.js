@@ -4,13 +4,16 @@ import connection from "../data/db.js";
 function promo(req, res) {
   // ex QUERY PER TAGLIE E PROMO
   const sqlSizesPromo = `SELECT 
-  c.id,
+   c.id,
+  c.categories_id,
   c.name,
-  c.price,
   c.img,
-  c.promo,
+  c.price,
+  c.sold_number,
   c.slug,
-   c.stock,
+  c.stock,
+  c.material,
+  c.promo,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
@@ -36,12 +39,15 @@ function mostSold(req, res) {
   // ex QUERY PER MOST SOLD
   const sqlMostSold = `SELECT 
   c.id,
+  c.categories_id,
   c.name,
-  c.price,
   c.img,
+  c.price,
   c.sold_number,
   c.slug,
   c.stock,
+  c.material,
+  c.promo,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
