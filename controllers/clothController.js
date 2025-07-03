@@ -9,6 +9,7 @@ function promo(req, res) {
   c.price,
   c.img,
   c.promo,
+  c.slug,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
@@ -38,6 +39,7 @@ function mostSold(req, res) {
   c.price,
   c.img,
   c.sold_number,
+  c.slug,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
