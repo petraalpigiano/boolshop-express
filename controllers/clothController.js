@@ -32,9 +32,18 @@ HAVING c.promo > 0`;
 // INDEX/MOST SOLD
 function mostSold(req, res) {
   // ex QUERY PER MOST SOLD
-  const sqlMostSold = `SELECT *
-FROM clothes
-ORDER BY clothes.sold_number DESC
+  const sqlMostSold = `SELECT 
+  c.id,
+  c.name,
+  c.price,
+  c.img,
+  c.sold_number,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img
+ORDER BY c.sold_number DESC
 LIMIT 3`;
   // ex VESTITI PIU VENDUTI
   connection.query(sqlMostSold, (err, results) => {
