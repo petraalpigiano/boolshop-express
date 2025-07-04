@@ -197,7 +197,16 @@ WHERE clothes.slug = ?`;
     });
   });
 }
-
+// SHOW/ FILTER SIZES
+function filterSizes(req, res) {}
+// SHOW/ FILTER CATEGORIES
+function filterCategories(req, res) {}
+// SHOW/ FILTER PRICES
+function filterPrices(req, res) {}
+// SHOW/ FILTER PRICES ASCENDANT
+function filterPricesAscendant(req, res) {}
+// SHOW/ FILTER PRICES DESCENDANT
+function filterPricesDescendant(req, res) {}
 // CREATE/CHECKOUT
 function checkout(req, res) {
   //  const id = parseInt(req.params.id);
@@ -259,4 +268,16 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
-export { index, show, promo, mostSold, checkout, searchBar };
+export {
+  index,
+  show,
+  promo,
+  mostSold,
+  checkout,
+  searchBar,
+  filterCategories,
+  filterPrices,
+  filterPricesAscendant,
+  filterPricesDescendant,
+  filterSizes,
+};
