@@ -68,10 +68,6 @@ LIMIT 3`;
     res.json(results);
   });
 }
-
-// INDEX/ SEARCH BAR FILTER
-function searchBar(req, res) {}
-
 // INDEX/CLOTHES LIST
 function index(req, res) {
   // ex LISTA DI TUTTI I VESTITI
