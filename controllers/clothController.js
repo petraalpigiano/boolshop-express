@@ -68,6 +68,49 @@ LIMIT 3`;
     res.json(results);
   });
 }
+// INDEX/ SEARCH BAR FILTER
+function searchBar(req, res) {
+  const userInput = "%" + req.params.input + "%";
+  console.log(userInput);
+  // ex QUERY PER SEARCHBAR
+  const sqlSearch = `
+  SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+HAVING c.name 
+LIKE ?
+OR c.material
+LIKE ?`;
+  // ex LISTA DEI CAPI BASATI SU INPUT UTENTE
+  connection.query(sqlSearch, [userInput, userInput], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
+
 // INDEX/CLOTHES LIST
 function index(req, res) {
   // ex LISTA DI TUTTI I VESTITI
@@ -87,6 +130,7 @@ FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
 GROUP BY c.id, c.name, c.price, c.img, c.stock`;
+  // ex LISTA DI TUTTI I CAPI
   connection.query(sqlClothes, (err, results) => {
     if (err)
       return res.status(500).json({
@@ -158,10 +202,21 @@ WHERE clothes.slug = ?`;
 function checkout(req, res) {
   //  const id = parseInt(req.params.id);
   // const vote = parseInt(req.body.vote);
-  const { name, surname, mail, address, cell_number, city, cap } = req.body;
+  const {
+    name,
+    surname,
+    mail,
+    address,
+    cell_number,
+    city,
+    cap,
+    promo_code_id,
+    total_price,
+    shipping_cost,
+  } = req.body;
   // ex QUERY PER INVIO DATI GUEST
   const sqlCheckout = `
-  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
   const sqlOrderId = `INSERT INTO clothes_orders(order_id)
 SELECT orders.id
@@ -170,7 +225,18 @@ WHERE orders.id = LAST_INSERT_ID()`;
   // ex INVIO DATI GUEST
   connection.query(
     sqlCheckout,
-    [name, surname, mail, address, cell_number, city, cap],
+    [
+      name,
+      surname,
+      mail,
+      address,
+      cell_number,
+      city,
+      cap,
+      promo_code_id,
+      total_price,
+      shipping_cost,
+    ],
     (err, results) => {
       if (err)
         return res.status(500).json({
@@ -193,4 +259,4 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
-export { index, show, promo, mostSold, checkout };
+export { index, show, promo, mostSold, checkout, searchBar };
