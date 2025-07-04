@@ -68,7 +68,7 @@ LIMIT 3`;
     res.json(results);
   });
 }
-// INDEX/ SEARCH BAR FILTER
+// SHOW/ SEARCH BAR FILTER
 function searchBar(req, res) {
   const userInput = "%" + req.params.input + "%";
   console.log(userInput);
