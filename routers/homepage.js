@@ -9,7 +9,7 @@ const router = express.Router();
 router.get("/promo", promo);
 // SHOW/ CLOTH DETAILS
 router.get("/most-sold", mostSold);
-// INDEX/ SEARCH BAR FILTER
-router.get("/searchbar", searchBar);
+// SHOW/ SEARCH BAR FILTER
+router.get("/searchbar/:input", searchBar);
 
 export default router;

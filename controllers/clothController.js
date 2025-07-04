@@ -70,7 +70,45 @@ LIMIT 3`;
 }
 // INDEX/ SEARCH BAR FILTER
 function searchBar(req, res) {
-  res.send("searchbar funziona");
+  const userInput = "%" + req.params.input + "%";
+  console.log(userInput);
+  // ex QUERY PER SEARCHBAR
+  const sqlSearch = `
+  SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+HAVING c.name 
+LIKE ?
+OR c.material
+LIKE ?`;
+  // ex LISTA DEI CAPI BASATI SU INPUT UTENTE
+  connection.query(sqlSearch, [userInput, userInput], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
 }
 
 // INDEX/CLOTHES LIST
@@ -92,6 +130,7 @@ FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
 GROUP BY c.id, c.name, c.price, c.img, c.stock`;
+  // ex LISTA DI TUTTI I CAPI
   connection.query(sqlClothes, (err, results) => {
     if (err)
       return res.status(500).json({
