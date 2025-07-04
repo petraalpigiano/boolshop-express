@@ -193,4 +193,4 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
-export { index, show, promo, mostSold, checkout, searchBar };
+export { index, show, promo, mostSold, checkout };
