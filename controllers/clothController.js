@@ -1,4 +1,6 @@
+import { log } from "console";
 import connection from "../data/db.js";
+import sendOrderEmail from "../mailer.js";
 
 // INDEX/PROMO CLOTHES
 function promo(req, res) {
@@ -200,8 +202,8 @@ WHERE clothes.slug = ?`;
 
 // CREATE/CHECKOUT
 function checkout(req, res) {
-  //  const id = parseInt(req.params.id);
-  // const vote = parseInt(req.body.vote);
+  console.log("checkout ready");
+
   const {
     name,
     surname,
@@ -213,16 +215,15 @@ function checkout(req, res) {
     promo_code_id,
     total_price,
     shipping_cost,
+    cart,
   } = req.body;
-  // ex QUERY PER INVIO DATI GUEST
+
   const sqlCheckout = `
-  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
-  const sqlOrderId = `INSERT INTO clothes_orders(order_id)
-SELECT orders.id
-FROM orders
-WHERE orders.id = LAST_INSERT_ID()`;
-  // ex INVIO DATI GUEST
+    INSERT INTO clothes.orders 
+    (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `;
+
   connection.query(
     sqlCheckout,
     [
@@ -238,25 +239,57 @@ WHERE orders.id = LAST_INSERT_ID()`;
       shipping_cost,
     ],
     (err, results) => {
-      if (err)
+      if (err) {
         return res.status(500).json({
           message: "Richiesta fallita!",
           err,
         });
+      }
 
-      res.status(201).json({
-        message: "Ordine inviato con successo",
-        id: results.insertId,
+      const orderId = results.insertId;
+
+      const insertItems = cart.map((item) => {
+        return new Promise((resolve, reject) => {
+          const sqlInsertItem = `
+            INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
+            VALUES (?, ?, ?, ?)
+          `;
+          connection.query(
+            sqlInsertItem,
+            [item.id, orderId, item.quantity, item.size],
+            (err) => {
+              if (err) return reject(err);
+              resolve();
+            }
+          );
+        });
       });
+
+      Promise.all(insertItems)
+        .then(() => {
+          return sendOrderEmail({
+            to: mail,
+            subject: "Conferma Ordine - Boolshop",
+            text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${total_price}€`,
+            name,
+            orderId,
+            total: total_price,
+          });
+        })
+        .then(() => {
+          res.status(201).json({
+            message: "Ordine inviato con successo",
+            id: orderId,
+          });
+        })
+        .catch((error) => {
+          console.error("Errore:", error);
+          res.status(500).json({
+            message: "Errore durante il salvataggio dell'ordine o invio email.",
+            error,
+          });
+        });
     }
   );
-  // ex INSERIMENTO ID
-  connection.query(sqlOrderId, [name, surname], (err, results) => {
-    if (err)
-      return res.status(500).json({
-        message: "Richiesta fallita!",
-        err,
-      });
-  });
 }
 export { index, show, promo, mostSold, checkout, searchBar };
