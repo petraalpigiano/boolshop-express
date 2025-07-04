@@ -204,10 +204,21 @@ WHERE clothes.slug = ?`;
 function checkout(req, res) {
   //  const id = parseInt(req.params.id);
   // const vote = parseInt(req.body.vote);
-  const { name, surname, mail, address, cell_number, city, cap } = req.body;
+  const {
+    name,
+    surname,
+    mail,
+    address,
+    cell_number,
+    city,
+    cap,
+    promo_code_id,
+    total_price,
+    shipping_cost,
+  } = req.body;
   // ex QUERY PER INVIO DATI GUEST
   const sqlCheckout = `
-  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+  INSERT INTO clothes.orders (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   // ex QUERY PER INSERIMENTO ORDER_ID SU CLOTHES_ORDER
   const sqlOrderId = `INSERT INTO clothes_orders(order_id)
 SELECT orders.id
@@ -216,7 +227,18 @@ WHERE orders.id = LAST_INSERT_ID()`;
   // ex INVIO DATI GUEST
   connection.query(
     sqlCheckout,
-    [name, surname, mail, address, cell_number, city, cap],
+    [
+      name,
+      surname,
+      mail,
+      address,
+      cell_number,
+      city,
+      cap,
+      promo_code_id,
+      total_price,
+      shipping_cost,
+    ],
     (err, results) => {
       if (err)
         return res.status(500).json({
