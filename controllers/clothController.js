@@ -72,7 +72,22 @@ LIMIT 3`;
 // INDEX/CLOTHES LIST
 function index(req, res) {
   // ex LISTA DI TUTTI I VESTITI
-  const sqlClothes = `SELECT * FROM clothes`;
+  const sqlClothes = `SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock`;
   connection.query(sqlClothes, (err, results) => {
     if (err)
       return res.status(500).json({
