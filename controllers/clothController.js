@@ -69,6 +69,9 @@ LIMIT 3`;
   });
 }
 
+// INDEX/ SEARCH BAR FILTER
+function searchBar(req, res) {}
+
 // INDEX/CLOTHES LIST
 function index(req, res) {
   // ex LISTA DI TUTTI I VESTITI
@@ -104,17 +107,24 @@ GROUP BY c.id, c.name, c.price, c.img, c.stock`;
 // SHOW/CLOTH DETAILS
 function show(req, res) {
   const slug = req.params.slug;
-  // ex QUERY PER VESTITO SPECIFICO
-  const sqlClothes = `SELECT * FROM clothes WHERE clothes.slug = ?  `;
-  // ex QUERY PER TAGLIE
-  const sqlSizes = `SELECT sizes.name
-FROM clothes
-INNER JOIN clothes_sizes
-ON clothes.id = clothes_sizes.cloth_id
-INNER JOIN sizes
-ON clothes_sizes.size_id = sizes.id
-WHERE clothes.slug = ?`;
-
+  // ex QUERY PER VESTITO SPECIFICO E TAGLIE
+  const sqlSizes = `SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+HAVING c.slug = ?`;
   // ex QUERY PER CATEGORIA
   const sqlCategory = `
 SELECT categories.name
@@ -122,12 +132,11 @@ FROM clothes
 INNER JOIN categories
 ON clothes.categories_id = categories.id
 WHERE clothes.slug = ?`;
-
-  // ex DETTAGLIO VESTITO SPECIFICO
-  connection.query(sqlClothes, [slug], (err, results) => {
+  // ex DETTAGLIO E TAGLIE DEL VESTITO SPECIFICO
+  connection.query(sqlSizes, [slug], (err, results) => {
     if (err)
       return res.status(500).json({
-        error: "Richiesta fallita!",
+        error: "Cloth and sizes not found!",
       });
     if (results.length === 0) {
       return res.status(404).json({ error: "Cloth not found!" });
@@ -137,14 +146,6 @@ WHERE clothes.slug = ?`;
         "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
     });
     const cloth = results[0];
-    // ex TAGLIE DEL VESTITO SPECIFICO
-    connection.query(sqlSizes, [slug], (err, results) => {
-      if (err)
-        return res.status(500).json({
-          error: "Sizes not found!",
-        });
-      cloth.sizes = results;
-    });
     // ex CATEGORIA DEL VESTITO SPECIFICO
     connection.query(sqlCategory, [slug], (err, results) => {
       if (err)
@@ -196,4 +197,4 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
-export { index, show, promo, mostSold, checkout };
+export { index, show, promo, mostSold, checkout, searchBar };
