@@ -68,6 +68,10 @@ LIMIT 3`;
     res.json(results);
   });
 }
+// INDEX/ SEARCH BAR FILTER
+function searchBar(req, res) {
+  res.send("searchbar funziona");
+}
 
 // INDEX/CLOTHES LIST
 function index(req, res) {
@@ -196,4 +200,4 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
-export { index, show, promo, mostSold, checkout };
+export { index, show, promo, mostSold, checkout, searchBar };
