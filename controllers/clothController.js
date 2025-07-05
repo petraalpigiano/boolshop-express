@@ -307,7 +307,39 @@ ORDER BY c.price ASC`;
 }
 // SHOW/ FILTER PRICES DESCENDANT
 function filterPricesDescendant(req, res) {
-  res.send("funziona");
+  // ex QUERY PER FILTRO PREZZO DISCENDENTE
+  const sqlFilterPricesDescendant = `SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+ORDER BY c.price DESC`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO PRESSO DISCENDENTE
+  connection.query(sqlFilterPricesDescendant, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
 }
 // CREATE/CHECKOUT
 function checkout(req, res) {
