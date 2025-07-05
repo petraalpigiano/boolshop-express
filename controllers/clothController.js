@@ -146,7 +146,7 @@ GROUP BY c.id, c.name, c.price, c.img, c.stock`;
 // SHOW/CLOTH DETAILS
 function show(req, res) {
   const slug = req.params.slug;
-  // ex QUERY PER VESTITO SPECIFICO E TAGLIE
+  // ex QUERY PER VESTITO SPECIFICO E TAGLIE E CATEGORIA
   const sqlSizes = `SELECT 
    c.id,
   c.categories_id,
@@ -166,14 +166,7 @@ JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
 GROUP BY c.id, c.name, c.price, c.img, c.stock
 HAVING c.slug = ?`;
-  // ex QUERY PER CATEGORIA
-  //   const sqlCategory = `
-  // SELECT categories.name
-  // FROM clothes
-  // INNER JOIN categories
-  // ON clothes.categories_id = categories.id
-  // WHERE clothes.slug = ?`;
-  // ex DETTAGLIO E TAGLIE DEL VESTITO SPECIFICO
+  // ex DETTAGLIO E TAGLIE E CATEGORIA DEL VESTITO SPECIFICO
   connection.query(sqlSizes, [slug], (err, results) => {
     if (err)
       return res.status(500).json({
@@ -186,17 +179,7 @@ HAVING c.slug = ?`;
       return (currentCloth.img =
         "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
     });
-    // const cloth = results[0];
     res.json(results);
-    // // ex CATEGORIA DEL VESTITO SPECIFICO
-    // connection.query(sqlCategory, [slug], (err, results) => {
-    //   if (err)
-    //     return res.status(500).json({
-    //       error: "Category not found!",
-    //     });
-    //   cloth.category = results;
-    //   res.json(cloth);
-    // });
   });
 }
 // SHOW/ FILTER SIZES
