@@ -71,7 +71,6 @@ LIMIT 3`;
 // SHOW/ SEARCH BAR FILTER
 function searchBar(req, res) {
   const userInput = "%" + req.params.input + "%";
-  console.log(userInput);
   // ex QUERY PER SEARCHBAR
   const sqlSearch = `
   SELECT 
@@ -198,15 +197,118 @@ WHERE clothes.slug = ?`;
   });
 }
 // SHOW/ FILTER SIZES
-function filterSizes(req, res) {}
+function filterSizes(req, res) {
+  const userInput = "%" + req.params.input + "%";
+  console.log(userInput);
+  // ex QUERY PER FILTRO TAGLIE
+  const sqlSFilterSizes = `
+  SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+HAVING c.name 
+LIKE ?
+OR c.material
+LIKE ?`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO TAGLIE
+  connection.query(sqlSFilterSizes, [userInput, userInput], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
 // SHOW/ FILTER CATEGORIES
-function filterCategories(req, res) {}
+function filterCategories(req, res) {
+  const userInput = req.params.input;
+  console.log(userInput);
+  // ex QUERY PER FILTRO TAGLIE
+  const sqlFilterCategories = `
+  SELECT *
+FROM clothes
+INNER JOIN categories
+ON clothes.categories_id = categories.id
+WHERE categories.name = ?`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO TAGLIE
+  connection.query(sqlFilterCategories, [userInput], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
 // SHOW/ FILTER PRICES
-function filterPrices(req, res) {}
+function filterPrices(req, res) {
+  res.send("funziona");
+}
 // SHOW/ FILTER PRICES ASCENDANT
-function filterPricesAscendant(req, res) {}
+function filterPricesAscendant(req, res) {
+  // ex QUERY PER FILTRO PREZZO ASCENDENTE
+  const sqlFilterPricesAscendant = `SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+ORDER BY c.price ASC`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO PRESSO ASCENDENTE
+  connection.query(sqlFilterPricesAscendant, (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
+}
 // SHOW/ FILTER PRICES DESCENDANT
-function filterPricesDescendant(req, res) {}
+function filterPricesDescendant(req, res) {
+  res.send("funziona");
+}
 // CREATE/CHECKOUT
 function checkout(req, res) {
   //  const id = parseInt(req.params.id);
@@ -268,6 +370,7 @@ WHERE orders.id = LAST_INSERT_ID()`;
       });
   });
 }
+
 export {
   index,
   show,

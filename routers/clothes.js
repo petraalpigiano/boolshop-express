@@ -15,17 +15,17 @@ const router = express.Router();
 // VARIE ROUTE
 // INDEX/CLOTHES LIST
 router.get("/", index);
-// SHOW/ CLOTH DETAILS
-router.get("/:slug", show);
 // SHOW/ FILTER SIZES
 router.get("/f-sizes", filterSizes);
 // SHOW/ FILTER CATEGORIES
-router.get("/f-categories", filterCategories);
+router.get("/f-categories/:input", filterCategories);
 // SHOW/ FILTER PRICES
 router.get("/f-prices", filterPrices);
 // SHOW/ FILTER PRICES ASCENDANT
 router.get("/f-p-ascendant", filterPricesAscendant);
 // SHOW/ FILTER PRICES DESCENDANT
 router.get("/f-p-descendant", filterPricesDescendant);
+// SHOW/ CLOTH DETAILS
+router.get("/:slug", show);
 
 export default router;
