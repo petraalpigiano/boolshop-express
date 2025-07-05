@@ -158,19 +158,21 @@ function show(req, res) {
   c.stock,
   c.material,
   c.promo,
+  categories.name AS category,
   JSON_ARRAYAGG(s.name) AS sizes
 FROM clothes c
+JOIN categories ON c.categories_id = categories.id
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
 GROUP BY c.id, c.name, c.price, c.img, c.stock
 HAVING c.slug = ?`;
   // ex QUERY PER CATEGORIA
-  const sqlCategory = `
-SELECT categories.name
-FROM clothes
-INNER JOIN categories
-ON clothes.categories_id = categories.id
-WHERE clothes.slug = ?`;
+  //   const sqlCategory = `
+  // SELECT categories.name
+  // FROM clothes
+  // INNER JOIN categories
+  // ON clothes.categories_id = categories.id
+  // WHERE clothes.slug = ?`;
   // ex DETTAGLIO E TAGLIE DEL VESTITO SPECIFICO
   connection.query(sqlSizes, [slug], (err, results) => {
     if (err)
@@ -184,16 +186,17 @@ WHERE clothes.slug = ?`;
       return (currentCloth.img =
         "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
     });
-    const cloth = results[0];
-    // ex CATEGORIA DEL VESTITO SPECIFICO
-    connection.query(sqlCategory, [slug], (err, results) => {
-      if (err)
-        return res.status(500).json({
-          error: "Category not found!",
-        });
-      cloth.category = results;
-      res.json(cloth);
-    });
+    // const cloth = results[0];
+    res.json(results);
+    // // ex CATEGORIA DEL VESTITO SPECIFICO
+    // connection.query(sqlCategory, [slug], (err, results) => {
+    //   if (err)
+    //     return res.status(500).json({
+    //       error: "Category not found!",
+    //     });
+    //   cloth.category = results;
+    //   res.json(cloth);
+    // });
   });
 }
 // SHOW/ FILTER SIZES
@@ -242,14 +245,28 @@ LIKE ?`;
 function filterCategories(req, res) {
   const userInput = req.params.input;
   console.log(userInput);
-  // ex QUERY PER FILTRO TAGLIE
+  // ex QUERY PER FILTRO CATEGORIE
   const sqlFilterCategories = `
-  SELECT *
-FROM clothes
-INNER JOIN categories
-ON clothes.categories_id = categories.id
-WHERE categories.name = ?`;
-  // ex LISTA DEI CAPI BASATI SU FILTRO TAGLIE
+  SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo,
+  categories.name AS category,
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN categories ON c.categories_id = categories.id
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id
+HAVING categories.name = ?`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO CATEGORIE
   connection.query(sqlFilterCategories, [userInput], (err, results) => {
     if (err)
       return res.status(500).json({
