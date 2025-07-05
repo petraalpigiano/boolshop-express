@@ -20,7 +20,7 @@ router.get("/f-sizes", filterSizes);
 // SHOW/ FILTER CATEGORIES
 router.get("/f-categories/:input", filterCategories);
 // SHOW/ FILTER PRICES
-router.get("/f-prices", filterPrices);
+router.get("/f-prices/:input", filterPrices);
 // SHOW/ FILTER PRICES ASCENDANT
 router.get("/f-p-ascendant", filterPricesAscendant);
 // SHOW/ FILTER PRICES DESCENDANT

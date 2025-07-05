@@ -267,7 +267,41 @@ WHERE categories.name = ?`;
 }
 // SHOW/ FILTER PRICES
 function filterPrices(req, res) {
-  res.send("funziona");
+  const userInput = req.params.input;
+  // ex QUERY PER FILTRO RANGE PREZZO
+  const sqlFilterPrices = `
+ SELECT 
+   c.id,
+  c.categories_id,
+  c.name,
+  c.img,
+  c.price,
+  c.sold_number,
+  c.slug,
+  c.stock,
+  c.material,
+  c.promo, 
+  JSON_ARRAYAGG(s.name) AS sizes
+FROM clothes c
+JOIN clothes_sizes cs ON c.id = cs.cloth_id
+JOIN sizes s ON cs.size_id = s.id
+GROUP BY c.id, c.name, c.price, c.img, c.stock
+HAVING c.price BETWEEN 0 AND ?`;
+  // ex LISTA DEI CAPI BASATI SU FILTRO RANGE PREZZO
+  connection.query(sqlFilterPrices, [userInput], (err, results) => {
+    if (err)
+      return res.status(500).json({
+        error: "Richiesta fallita!",
+      });
+    if (results.length === 0) {
+      return res.status(404).json({ error: "No results, try again!" });
+    }
+    results.map(function (currentCloth) {
+      return (currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    });
+    res.json(results);
+  });
 }
 // SHOW/ FILTER PRICES ASCENDANT
 function filterPricesAscendant(req, res) {
