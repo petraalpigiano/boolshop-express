@@ -184,8 +184,7 @@ HAVING c.slug = ?`;
 }
 // SHOW/ FILTER SIZES
 function filterSizes(req, res) {
-  const userInput = "%" + req.params.input + "%";
-  console.log(userInput);
+  const userInput = req.params.input;
   // ex QUERY PER FILTRO TAGLIE
   const sqlSFilterSizes = `
   SELECT 
@@ -203,13 +202,10 @@ function filterSizes(req, res) {
 FROM clothes c
 JOIN clothes_sizes cs ON c.id = cs.cloth_id
 JOIN sizes s ON cs.size_id = s.id
-GROUP BY c.id, c.name, c.price, c.img, c.stock
-HAVING c.name 
-LIKE ?
-OR c.material
-LIKE ?`;
+WHERE s.name = ?
+GROUP BY c.id, c.name, c.price, c.img, c.stock`;
   // ex LISTA DEI CAPI BASATI SU FILTRO TAGLIE
-  connection.query(sqlSFilterSizes, [userInput, userInput], (err, results) => {
+  connection.query(sqlSFilterSizes, [userInput], (err, results) => {
     if (err)
       return res.status(500).json({
         error: "Richiesta fallita!",

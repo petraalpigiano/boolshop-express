@@ -16,7 +16,7 @@ const router = express.Router();
 // INDEX/CLOTHES LIST
 router.get("/", index);
 // SHOW/ FILTER SIZES
-router.get("/f-sizes", filterSizes);
+router.get("/f-sizes/:input", filterSizes);
 // SHOW/ FILTER CATEGORIES
 router.get("/f-categories/:input", filterCategories);
 // SHOW/ FILTER PRICES
