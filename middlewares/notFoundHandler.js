@@ -1,7 +1,5 @@
 function notFoundHandler(req, res, next) {
-  res.status(404).json({
-    message: "Pagina non trovata",
-  });
+  res.status(202).json([]);
 }
 
 export default notFoundHandler;

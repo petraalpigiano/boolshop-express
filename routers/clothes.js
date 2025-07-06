@@ -7,6 +7,7 @@ import {
   filterPricesAscendant,
   filterPricesDescendant,
   filterSizes,
+  allFilters,
 } from "../controllers/clothController.js";
 
 // ROUTER
@@ -15,6 +16,8 @@ const router = express.Router();
 // VARIE ROUTE
 // INDEX/CLOTHES LIST
 router.get("/", index);
+// SHOW/ ALL FILTER TOGETHER
+router.get("/f-all", allFilters);
 // SHOW/ FILTER SIZES
 router.get("/f-sizes/:input", filterSizes);
 // SHOW/ FILTER CATEGORIES
