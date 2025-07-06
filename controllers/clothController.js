@@ -225,7 +225,6 @@ GROUP BY c.id, c.name, c.price, c.img, c.stock`;
 // SHOW/ FILTER CATEGORIES
 function filterCategories(req, res) {
   const userInput = req.params.input;
-  console.log(userInput);
   // ex QUERY PER FILTRO CATEGORIE
   const sqlFilterCategories = `
   SELECT 
