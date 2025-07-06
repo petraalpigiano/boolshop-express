@@ -187,7 +187,7 @@ HAVING c.slug = ?`;
 
 // SHOW/ ALL FILTER TOGETHER
 function allFilters(req, res) {
-  const { price, size, category, order } = req.query;
+  const { price, size, category, order, query } = req.query;
   const ascOrDesc = order === "desc" ? "desc" : "asc";
   const conditions = [];
   const params = [];
@@ -204,44 +204,50 @@ function allFilters(req, res) {
     conditions.push("categories.name = ?");
     params.push(category);
   }
+  if (query) {
+    conditions.push("c.name LIKE ?");
+    params.push(`%${query}%`);
+  }
+
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-  // ex QUERY PER USARE I FILTRI CONTEMPORANEAMENTE
-  const sqlFilterAll = `SELECT 
-   c.id,
-  c.categories_id,
-  c.name,
-  c.img,
-  c.price,
-  c.sold_number,
-  c.slug,
-  c.stock,
-  c.material,
-  c.promo,
-  categories.name AS category,
-  JSON_ARRAYAGG(s.name) AS sizes
-FROM clothes c
-JOIN categories ON c.categories_id = categories.id
-JOIN clothes_sizes cs ON c.id = cs.cloth_id
-JOIN sizes s ON cs.size_id = s.id
-${where}
-GROUP BY c.id, c.name, c.price, c.img, c.stock
-ORDER BY c.price ${ascOrDesc}`;
-  // ex LISTA DEI CAPI BASATI SU PIU FILTRI CONTEMPORANEAMENTE
+
+  const sqlFilterAll = `
+    SELECT 
+      c.id,
+      c.categories_id,
+      c.name,
+      c.img,
+      c.price,
+      c.sold_number,
+      c.slug,
+      c.stock,
+      c.material,
+      c.promo,
+      categories.name AS category,
+      JSON_ARRAYAGG(s.name) AS sizes
+    FROM clothes c
+    JOIN categories ON c.categories_id = categories.id
+    JOIN clothes_sizes cs ON c.id = cs.cloth_id
+    JOIN sizes s ON cs.size_id = s.id
+    ${where}
+    GROUP BY c.id, c.name, c.price, c.img, c.stock
+    ORDER BY c.price ${ascOrDesc}
+  `;
+
   connection.query(sqlFilterAll, params, (err, results) => {
-    if (err)
-      return res.status(500).json({
-        error: "Richiesta fallita!",
-      });
+    if (err) return res.status(500).json({ error: "Richiesta fallita!" });
     if (results.length === 0) {
       return res.status(404).json({ error: "No results, try again!" });
     }
-    results.map(function (currentCloth) {
-      return (currentCloth.img =
-        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img);
+    results.map((currentCloth) => {
+      currentCloth.img =
+        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img;
+      return currentCloth;
     });
     res.json(results);
   });
 }
+
 // SHOW/ FILTER SIZES
 function filterSizes(req, res) {
   const userInput = req.params.input;
