@@ -556,6 +556,14 @@ function validatePromoCode(req, res) {
     }
 
     const promo = results[0];
+    const today = new Date().toISOString().split("T")[0];
+
+    if (today < promo.start_date || today > promo.end_date) {
+      return res.json({
+        valid: false,
+        message: "Promo code not active",
+      });
+    }
 
     res.json({
       valid: true,
