@@ -529,6 +529,43 @@ function checkout(req, res) {
   );
 }
 
+function validatePromoCode(req, res) {
+  const { code } = req.body;
+
+  if (!code) {
+    return res.json({
+      valid: false,
+      message: "No promo codes added",
+    });
+  }
+
+  const sql = `SELECT id, value FROM promo_codes WHERE code = ?`;
+
+  connection.query(sql, [code.toUpperCase()], (err, results) => {
+    if (err) {
+      return res
+        .status(500)
+        .json({ valid: false, message: "Server error", err });
+    }
+
+    if (results.length === 0) {
+      return res.json({
+        valid: false,
+        message: "Invalid code",
+      });
+    }
+
+    const promo = results[0];
+
+    res.json({
+      valid: true,
+      promo_code_id: promo.id,
+      discount: promo.value,
+      message: `Valid code: ${promo.value}% discount`,
+    });
+  });
+}
+
 export {
   index,
   show,
@@ -542,4 +579,5 @@ export {
   filterPricesDescendant,
   filterSizes,
   allFilters,
+  validatePromoCode,
 };
