@@ -187,7 +187,7 @@ HAVING c.slug = ?`;
 
 // SHOW/ ALL FILTER TOGETHER
 function allFilters(req, res) {
-  const { price, size, category, order, query } = req.query;
+  const { price, size, category, order, query, promo } = req.query;
   const ascOrDesc = order === "desc" ? "desc" : "asc";
   const conditions = [];
   const params = [];
@@ -208,7 +208,10 @@ function allFilters(req, res) {
     conditions.push("c.name LIKE ?");
     params.push(`%${query}%`);
   }
-
+  if (promo) {
+    conditions.push("c.promo > 0");
+    params.push(promo);
+  }
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const sqlFilterAll = `
