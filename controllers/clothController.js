@@ -457,6 +457,7 @@ function checkout(req, res) {
     // cart,
   } = req.body;
   console.log(name);
+  console.log(mail);
 
   const sqlCheckout = `
     INSERT INTO clothes.orders 
