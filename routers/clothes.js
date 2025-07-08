@@ -1,4 +1,6 @@
 import express from "express";
+import { validationResult } from "express-validator";
+import filtersValidator from "../middlewares/filtersValidator.js";
 import {
   index,
   show,
@@ -17,7 +19,13 @@ const router = express.Router();
 // INDEX/CLOTHES LIST
 router.get("/", index);
 // SHOW/ ALL FILTER TOGETHER
-router.get("/f-all", allFilters);
+router.get("/f-all", filtersValidator, (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+  }
+  allFilters(req, res, next);
+});
 // SHOW/ FILTER SIZES
 router.get("/f-sizes/:input", filterSizes);
 // SHOW/ FILTER CATEGORIES
