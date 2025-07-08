@@ -370,23 +370,32 @@ HAVING c.price BETWEEN 0 AND ?`;
 // SHOW/ FILTER PRICES ASCENDANT
 function filterPricesAscendant(req, res) {
   // ex QUERY PER FILTRO PREZZO ASCENDENTE
-  const sqlFilterPricesAscendant = `SELECT 
-   c.id,
-  c.categories_id,
-  c.name,
-  c.img,
-  c.price,
-  c.sold_number,
-  c.slug,
-  c.stock,
-  c.material,
-  c.promo,
-  JSON_ARRAYAGG(s.name) AS sizes
-FROM clothes c
-JOIN clothes_sizes cs ON c.id = cs.cloth_id
-JOIN sizes s ON cs.size_id = s.id
-GROUP BY c.id, c.name, c.price, c.img, c.stock
-ORDER BY c.price ASC`;
+  const sqlFilterPricesAscendant = `
+  SELECT 
+    base.id,
+    base.categories_id,
+    base.name,
+    base.img,
+    base.price,
+    base.sold_number,
+    base.slug,
+    base.stock,
+    base.material,
+    base.promo,
+    base.final_price,
+    JSON_ARRAYAGG(s.name) AS sizes
+  FROM (
+    SELECT 
+      c.*,
+      IF(IFNULL(c.promo, 0) > 0, c.price - (c.price * c.promo / 100), c.price) AS final_price
+    FROM clothes c
+  ) AS base
+  JOIN clothes_sizes cs ON base.id = cs.cloth_id
+  JOIN sizes s ON cs.size_id = s.id
+  GROUP BY base.id
+  ORDER BY base.final_price ASC
+`;
+
   // ex LISTA DEI CAPI BASATI SU FILTRO PRESSO ASCENDENTE
   connection.query(sqlFilterPricesAscendant, (err, results) => {
     if (err)
@@ -406,23 +415,29 @@ ORDER BY c.price ASC`;
 // SHOW/ FILTER PRICES DESCENDANT
 function filterPricesDescendant(req, res) {
   // ex QUERY PER FILTRO PREZZO DISCENDENTE
-  const sqlFilterPricesDescendant = `SELECT 
-   c.id,
-  c.categories_id,
-  c.name,
-  c.img,
-  c.price,
-  c.sold_number,
-  c.slug,
-  c.stock,
-  c.material,
-  c.promo,
-  JSON_ARRAYAGG(s.name) AS sizes
-FROM clothes c
-JOIN clothes_sizes cs ON c.id = cs.cloth_id
-JOIN sizes s ON cs.size_id = s.id
-GROUP BY c.id, c.name, c.price, c.img, c.stock
-ORDER BY c.price DESC`;
+  const sqlFilterPricesDescendant = `  SELECT 
+    base.id,
+    base.categories_id,
+    base.name,
+    base.img,
+    base.price,
+    base.sold_number,
+    base.slug,
+    base.stock,
+    base.material,
+    base.promo,
+    base.final_price,
+    JSON_ARRAYAGG(s.name) AS sizes
+  FROM (
+    SELECT 
+      c.*,
+      IF(IFNULL(c.promo, 0) > 0, c.price - (c.price * c.promo / 100), c.price) AS final_price
+    FROM clothes c
+  ) AS base
+  JOIN clothes_sizes cs ON base.id = cs.cloth_id
+  JOIN sizes s ON cs.size_id = s.id
+  GROUP BY base.id
+  ORDER BY base.final_price DESC`;
   // ex LISTA DEI CAPI BASATI SU FILTRO PRESSO DISCENDENTE
   connection.query(sqlFilterPricesDescendant, (err, results) => {
     if (err)
