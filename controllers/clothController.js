@@ -454,8 +454,9 @@ function checkout(req, res) {
     promo_code_id,
     total_price,
     shipping_cost,
-    cart,
+    // cart,
   } = req.body;
+  console.log(name);
 
   const sqlCheckout = `
     INSERT INTO clothes.orders 
@@ -484,51 +485,56 @@ function checkout(req, res) {
           err,
         });
       }
-
-      const orderId = results.insertId;
-
-      const insertItems = cart.map((item) => {
-        return new Promise((resolve, reject) => {
-          const sqlInsertItem = `
-            INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
-            VALUES (?, ?, ?, ?)
-          `;
-          connection.query(
-            sqlInsertItem,
-            [item.id, orderId, item.quantity, item.size],
-            (err) => {
-              if (err) return reject(err);
-              resolve();
-            }
-          );
-        });
+      res.status(201).json({
+        message: "Ordine inviato con successo",
+        id: results.insertId,
       });
 
-      Promise.all(insertItems)
-        .then(() => {
-          return sendOrderEmail({
-            to: mail,
-            subject: "Conferma Ordine - Boolshop",
-            text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${total_price}€`,
-            name,
-            orderId,
-            total: total_price,
-            cart,
-          });
-        })
-        .then(() => {
-          res.status(201).json({
-            message: "Ordine inviato con successo",
-            id: orderId,
-          });
-        })
-        .catch((error) => {
-          console.error("Errore:", error);
-          res.status(500).json({
-            message: "Errore durante il salvataggio dell'ordine o invio email.",
-            error,
-          });
-        });
+      // const orderId = results.insertId;
+
+      //     const insertItems = cart.map((item) => {
+      //       return new Promise((resolve, reject) => {
+      //         const sqlInsertItem = `
+      //           INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
+      //           VALUES (?, ?, ?, ?)
+      //         `;
+      //         connection.query(
+      //           sqlInsertItem,
+      //           [item.id, orderId, item.quantity, item.size],
+      //           (err) => {
+      //             if (err) return reject(err);
+      //             resolve();
+      //           }
+      //         );
+      //       });
+      //     });
+
+      //     Promise.all(insertItems)
+      //       .then(() => {
+      //         return sendOrderEmail({
+      //           to: mail,
+      //           subject: "Conferma Ordine - Boolshop",
+      //           text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${total_price}€`,
+      //           name,
+      //           orderId,
+      //           total: total_price,
+      //           cart,
+      //         });
+      //       })
+      //       .then(() => {
+      //         res.status(201).json({
+      //           message: "Ordine inviato con successo",
+      //           id: orderId,
+      //         });
+      //       })
+      //       .catch((error) => {
+      //         console.error("Errore:", error);
+      //         res.status(500).json({
+      //           message: "Errore durante il salvataggio dell'ordine o invio email.",
+      //           error,
+      //         });
+      //       });
+      //   }
     }
   );
 }

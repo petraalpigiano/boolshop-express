@@ -6,7 +6,17 @@ const checkoutValidator = [
     .isString()
     .notEmpty()
     .isLength({ min: 2 })
+    .escape()
+    .trim()
+    .stripLow()
     .withMessage("Il nome deve essere una stringa di almeno 2 caratteri"),
+  check("surname")
+    .isString()
+    .notEmpty()
+    .isLength({ min: 2 })
+    .escape()
+    .trim()
+    .stripLow()
+    .withMessage("Il cognome deve essere una stringa di almeno 2 caratteri"),
 ];
-
 export default checkoutValidator;
