@@ -1,5 +1,5 @@
 import express from "express";
-import { validationResult } from "express-validator";
+import { validationResult, matchedData } from "express-validator";
 import filtersValidator from "../middlewares/filtersValidator.js";
 import {
   index,
@@ -24,7 +24,10 @@ router.get("/f-all", filtersValidator, (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
-  allFilters(req, res, next);
+  const cleanFilters = matchedData(req, {
+    locations: ["query", "body", "params"],
+  });
+  allFilters(req, res, next, cleanFilters);
 });
 // SHOW/ FILTER SIZES
 router.get("/f-sizes/:input", filterSizes);

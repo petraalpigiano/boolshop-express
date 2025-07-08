@@ -186,8 +186,8 @@ HAVING c.slug = ?`;
 }
 
 // SHOW/ ALL FILTER TOGETHER
-function allFilters(req, res) {
-  const { price, size, category, order, query, promo } = req.query;
+function allFilters(req, res, cleanFilters) {
+  const { price, size, category, order, query, promo } = cleanFilters;
   const ascOrDesc = order === "desc" ? "desc" : "asc";
   const conditions = [];
   const params = [];
