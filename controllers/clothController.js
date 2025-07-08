@@ -185,71 +185,87 @@ HAVING c.slug = ?`;
   });
 }
 
-// SHOW/ ALL FILTER TOGETHER
-function allFilters(req, res) {
+const allFilters = async (req, res) => {
   const { price, size, category, order, query, promo } = req.query;
-  const ascOrDesc = order === "desc" ? "desc" : "asc";
-  const conditions = [];
-  const params = [];
 
-  if (price) {
-    conditions.push("c.price BETWEEN 0 AND ?");
-    params.push(price);
-  }
-  if (size) {
-    conditions.push("s.name = ?");
-    params.push(size);
-  }
-  if (category) {
-    conditions.push("categories.name = ?");
-    params.push(category);
-  }
-  if (query) {
-    conditions.push("c.name LIKE ?");
-    params.push(`%${query}%`);
-  }
-  if (promo) {
-    conditions.push("c.promo > 0");
-    // params.push(promo);
-  }
-  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  try {
+    // Valore ordine default e sicurezza sul valore
+    const ascOrDesc = order && order.toUpperCase() === "DESC" ? "DESC" : "ASC";
 
-  const sqlFilterAll = `
-    SELECT 
-      c.id,
-      c.categories_id,
-      c.name,
-      c.img,
-      c.price,
-      c.sold_number,
-      c.slug,
-      c.stock,
-      c.material,
-      c.promo,
-      categories.name AS category,
-      JSON_ARRAYAGG(s.name) AS sizes
-    FROM clothes c
-    JOIN categories ON c.categories_id = categories.id
-    JOIN clothes_sizes cs ON c.id = cs.cloth_id
-    JOIN sizes s ON cs.size_id = s.id
-    ${where}
-    GROUP BY c.id, c.name, c.price, c.img, c.stock
-    ORDER BY c.price ${ascOrDesc}
-  `;
+    const whereConditions = [];
+    const params = [];
 
-  connection.query(sqlFilterAll, params, (err, results) => {
-    if (err) return res.status(500).json({ error: "Richiesta fallita!" });
-    if (results.length === 0) {
-      return res.status(404).json({ error: "No results, try again!" });
+    if (price) {
+      // filtro prezzo max (final_price <= price)
+      whereConditions.push(
+        `IF(IFNULL(c.promo, 0) > 0, c.price - (c.price * c.promo / 100), c.price) <= ?`
+      );
+      params.push(parseFloat(price));
     }
-    results.map((currentCloth) => {
-      currentCloth.img =
-        "http://localhost:3000/imgs/clothes_imgs/" + currentCloth.img;
-      return currentCloth;
-    });
+    if (category) {
+      whereConditions.push("categories.name = ?");
+      params.push(category);
+    }
+    if (promo === "true" || promo === true) {
+      whereConditions.push("c.promo > 0");
+    }
+    if (query) {
+      whereConditions.push("c.name LIKE ?");
+      params.push(`%${query}%`);
+    }
+
+    const whereClause = whereConditions.length
+      ? `WHERE ${whereConditions.join(" AND ")}`
+      : "";
+
+    // Query principale
+    // Nota: sizes aggregate con JSON_ARRAYAGG, poi filtro la taglia con HAVING JSON_CONTAINS
+    const havingConditions = [];
+    if (size) {
+      // il filtro sulla taglia usa HAVING per verificare che "size" sia presente nella lista JSON
+      havingConditions.push(`JSON_CONTAINS(sizes, '\"${size}\"')`);
+    }
+    const havingClause = havingConditions.length
+      ? `HAVING ${havingConditions.join(" AND ")}`
+      : "";
+
+    const sql = `
+      SELECT
+        c.id,
+        c.categories_id,
+        c.name,
+        c.img,
+        c.price,
+        c.sold_number,
+        c.slug,
+        c.stock,
+        c.material,
+        c.promo,
+        categories.name AS category,
+        IF(IFNULL(c.promo, 0) > 0, c.price - (c.price * c.promo / 100), c.price) AS final_price,
+        JSON_ARRAYAGG(s.name) AS sizes
+      FROM clothes c
+      JOIN categories ON c.categories_id = categories.id
+      JOIN clothes_sizes cs ON c.id = cs.cloth_id
+      JOIN sizes s ON cs.size_id = s.id
+      ${whereClause}
+      GROUP BY c.id, c.name, c.price, c.img, c.stock, c.sold_number, c.slug, c.material, c.promo, categories.name
+      ${havingClause}
+      ORDER BY final_price ${ascOrDesc}
+    `;
+
+    const [results] = await connection.query(sql, params);
+
+    if (!results.length) {
+      return res.status(404).json({ message: "Nessun risultato trovato." });
+    }
+
     res.json(results);
-  });
-}
+  } catch (error) {
+    console.error("Errore filtro vestiti:", error);
+    res.status(500).json({ message: "Errore interno del server." });
+  }
+};
 
 // SHOW/ FILTER SIZES
 function filterSizes(req, res) {
