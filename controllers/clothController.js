@@ -210,7 +210,7 @@ function allFilters(req, res) {
   }
   if (promo) {
     conditions.push("c.promo > 0");
-    params.push(promo);
+    // params.push(promo);
   }
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
