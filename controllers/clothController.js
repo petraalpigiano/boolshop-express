@@ -505,9 +505,9 @@ function checkout(req, res) {
       const insertItems = cart.map((item) => {
         return new Promise((resolve, reject) => {
           const sqlInsertItem = `
-            INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
-            VALUES (?, ?, ?, ?)
-          `;
+                INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
+                VALUES (?, ?, ?, ?)
+              `;
           connection.query(
             sqlInsertItem,
             [item.id, orderId, item.quantity, item.size],
@@ -547,7 +547,6 @@ function checkout(req, res) {
     }
   );
 }
-
 function validatePromoCode(req, res) {
   const { code } = req.body;
 
