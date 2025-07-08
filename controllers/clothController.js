@@ -513,6 +513,7 @@ function checkout(req, res) {
             name,
             orderId,
             total: total_price,
+            cart,
           });
         })
         .then(() => {
