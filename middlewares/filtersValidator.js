@@ -3,7 +3,6 @@ import { check } from "express-validator";
 const filtersValidator = [
   check("price")
     .optional()
-    .trim()
     .stripLow()
     .escape()
     .exists()
@@ -12,7 +11,6 @@ const filtersValidator = [
     .withMessage("Il range di prezzo non è valido"),
   check("size")
     .optional()
-    .trim()
     .stripLow()
     .escape()
     .notEmpty()
@@ -20,12 +18,32 @@ const filtersValidator = [
     .withMessage("La taglia non è valida"),
   check("category")
     .optional()
-    .trim()
     .stripLow()
     .escape()
     .notEmpty()
     .isIn(["Tops", "Dresses", "Bottoms", "Outerwear", "Accessories"])
     .withMessage("La categoria non è valida"),
+  check("order")
+    .optional()
+    .stripLow()
+    .escape()
+    .notEmpty()
+    .isIn(["desc", "asc"])
+    .withMessage("L'ordine non è valido"),
+  check("promo")
+    .optional()
+    .stripLow()
+    .escape()
+    .notEmpty()
+    .isIn(["1"])
+    .withMessage("La promo non è valida"),
+  check("query")
+    .optional()
+    .isString()
+    .stripLow()
+    .notEmpty()
+    .escape()
+    .withMessage("L'input non è valido"),
 ];
 
 export default filtersValidator;

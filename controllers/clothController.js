@@ -186,14 +186,19 @@ HAVING c.slug = ?`;
 }
 
 // SHOW/ ALL FILTER TOGETHER
-function allFilters(req, res, cleanFilters) {
-  const { price, size, category, order, query, promo } = cleanFilters;
+function allFilters(req, res) {
+  const { price, size, category, order, query, promo } = req.query;
+  console.log("order:", order);
   const ascOrDesc = order === "desc" ? "desc" : "asc";
+  console.log(ascOrDesc);
+
   const conditions = [];
   const params = [];
 
   if (price) {
-    conditions.push("c.price BETWEEN 0 AND ?");
+    conditions.push(
+      "IF(c.promo > 0, c.price - (c.price * c.promo / 100), c.price) BETWEEN 0 AND ?"
+    );
     params.push(price);
   }
   if (size) {
