@@ -188,35 +188,38 @@ HAVING c.slug = ?`;
 // SHOW/ ALL FILTER TOGETHER
 function allFilters(req, res) {
   const { price, size, category, order, query, promo } = req.query;
-  console.log("order:", order);
+
   const ascOrDesc = order === "desc" ? "desc" : "asc";
-  console.log(ascOrDesc);
 
   const conditions = [];
   const params = [];
 
-  if (price) {
+  if (price && !isNaN(price)) {
     conditions.push(
       "IF(c.promo > 0, c.price - (c.price * c.promo / 100), c.price) BETWEEN 0 AND ?"
     );
-    params.push(price);
+    params.push(Number(price));
   }
+
   if (size) {
     conditions.push("s.name = ?");
     params.push(size);
   }
+
   if (category) {
     conditions.push("categories.name = ?");
     params.push(category);
   }
+
   if (query) {
     conditions.push("c.name LIKE ?");
     params.push(`%${query}%`);
   }
-  if (promo) {
+
+  if (promo === "1") {
     conditions.push("c.promo > 0");
-    // params.push(promo);
   }
+
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const sqlFilterAll = `
@@ -226,7 +229,7 @@ function allFilters(req, res) {
       c.name,
       c.img,
       c.price,
-      ROUND (IF (c.promo > 0, c.price - (c.price * c.promo / 100), c.price), 2) AS new_price,
+      ROUND(IF(c.promo > 0, c.price - (c.price * c.promo / 100), c.price), 2) AS new_price,
       c.sold_number,
       c.slug,
       c.stock,
