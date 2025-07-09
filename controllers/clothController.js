@@ -462,86 +462,167 @@ function checkout(req, res) {
     city,
     cap,
     promo_code_id,
-    total_price,
-    shipping_cost,
     cart,
   } = req.body;
 
-  const sqlCheckout = `
-    INSERT INTO clothes.orders 
-    (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
-
-  connection.query(
-    sqlCheckout,
-    [
-      name,
-      surname,
-      mail,
-      address,
-      cell_number,
-      city,
-      cap,
-      promo_code_id,
-      total_price,
-      shipping_cost,
-    ],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({
-          message: "Richiesta fallita!",
-          err,
-        });
-      }
-
-      const orderId = results.insertId;
-
-      const insertItems = cart.map((item) => {
-        return new Promise((resolve, reject) => {
-          const sqlInsertItem = `
-                INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
-                VALUES (?, ?, ?, ?)
-              `;
-          connection.query(
-            sqlInsertItem,
-            [item.id, orderId, item.quantity, item.size],
-            (err) => {
-              if (err) return reject(err);
-              resolve();
-            }
+  // Controlla esistenza prodotto e taglia per ogni item del carrello
+  const checkStockPromises = cart.map((item) => {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT * 
+FROM clothes
+INNER JOIN clothes_sizes
+ON clothes.id = clothes_sizes.cloth_id
+INNER JOIN sizes
+ON clothes_sizes.size_id = sizes.id
+WHERE clothes.id = ?
+AND sizes.name = ?`;
+      connection.query(sql, [item.id, item.size], (err, results) => {
+        if (err) return reject(err);
+        if (results.length === 0) {
+          return reject(
+            new Error(`Prodotto ID ${item.id} taglia ${item.size} non trovato.`)
           );
+        }
+
+        const product = results[0];
+        if (item.quantity > product.stock) {
+          return reject(
+            new Error(
+              `Quantità richiesta per "${product.name}" taglia ${item.size} supera la disponibilità (${product.stock})`
+            )
+          );
+        }
+
+        resolve(); // stock sufficiente
+      });
+    });
+  });
+
+  Promise.all(checkStockPromises)
+    .then(() => {
+      // Recupera i prezzi reali dei prodotti dal db
+      const getPricePromises = cart.map((item) => {
+        return new Promise((resolve, reject) => {
+          const sql = `SELECT * 
+FROM clothes
+INNER JOIN clothes_sizes
+ON clothes.id = clothes_sizes.cloth_id
+INNER JOIN sizes
+ON clothes_sizes.size_id = sizes.id
+WHERE clothes.id = ?
+AND sizes.name = ?`;
+          connection.query(sql, [item.id, item.size], (err, results) => {
+            if (err) return reject(err);
+            if (results.length === 0) {
+              return reject(
+                new Error(`Prezzo per prodotto ID ${item.id} non trovato`)
+              );
+            }
+
+            const { price, name } = results[0];
+            item.unitPrice = price;
+            item.name = name;
+            resolve(price * item.quantity); // totale
+          });
         });
       });
 
-      Promise.all(insertItems)
-        .then(() => {
-          return sendOrderEmail({
-            to: mail,
-            subject: "Conferma Ordine - Boolshop",
-            text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${total_price}€`,
-            name,
-            orderId,
-            total: total_price,
-            cart,
+      return Promise.all(getPricePromises);
+    })
+    .then((subtotals) => {
+      // Calcola il prezzo totale con spedizione
+      const subtotal = subtotals.reduce((acc, val) => acc + val, 0);
+      const shippingCost = subtotal >= 70 ? 0 : 5;
+      const totalPrice = subtotal + shippingCost;
+
+      // Inserisco l'ordine nel db
+      const sqlCheckout = `
+        INSERT INTO clothes.orders 
+        (name, surname, mail, address, cell_number, city, cap, promo_code_id, total_price, shipping_cost)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      connection.query(
+        sqlCheckout,
+        [
+          name,
+          surname,
+          mail,
+          address,
+          cell_number,
+          city,
+          cap,
+          promo_code_id,
+          totalPrice,
+          shippingCost,
+        ],
+        (err, results) => {
+          if (err) {
+            return res.status(500).json({
+              message: "Richiesta fallita!",
+              err,
+            });
+          }
+
+          const orderId = results.insertId;
+
+          // Inserisco ogni prodotto presente nel carrello nel db
+          const insertItems = cart.map((item) => {
+            return new Promise((resolve, reject) => {
+              const sqlInsertItem = `
+                INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
+                VALUES (?, ?, ?, ?)
+              `;
+              connection.query(
+                sqlInsertItem,
+                [item.id, orderId, item.quantity, item.size],
+                (err) => {
+                  if (err) return reject(err);
+                  resolve();
+                }
+              );
+            });
           });
-        })
-        .then(() => {
-          res.status(201).json({
-            message: "Ordine inviato con successo",
-            id: orderId,
-          });
-        })
-        .catch((error) => {
-          console.error("Errore:", error);
-          res.status(500).json({
-            message: "Errore durante il salvataggio dell'ordine o invio email.",
-            error,
-          });
-        });
-    }
-  );
+
+          Promise.all(insertItems)
+            .then(() => {
+              // Invia email di conferma
+              return sendOrderEmail({
+                to: mail,
+                subject: "Conferma Ordine - Boolshop",
+                text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${totalPrice}€`,
+                name,
+                orderId,
+                total: totalPrice,
+                cart,
+              });
+            })
+            .then(() => {
+              res.status(201).json({
+                message: "Ordine inviato con successo",
+                id: orderId,
+              });
+            })
+            .catch((error) => {
+              console.error("Errore:", error);
+              res.status(500).json({
+                message:
+                  "Errore durante il salvataggio dell'ordine o invio email.",
+                error,
+              });
+            });
+        }
+      );
+    })
+    .catch((error) => {
+      console.error("Errore checkout:", error);
+      res.status(400).json({
+        message: "Errore durante il checkout",
+        error: error.message,
+      });
+    });
 }
+
 function validatePromoCode(req, res) {
   const { code } = req.body;
 

@@ -47,6 +47,13 @@ const checkoutValidator = [
     .blacklist(" -")
     .isMobilePhone("any")
     .withMessage("Il numero di cellulare non è valido"),
+  check("cart")
+    .isArray({ min: 1 })
+    .withMessage("Il carrello deve contenere almeno un prodotto"),
+  check("cart.*.id").isInt({ min: 1 }).withMessage("ID prodotto non valido"),
+  check("cart.*.quantity")
+    .isInt({ min: 1 })
+    .withMessage("Quantità prodotto non valida"),
   // check("payment_method")
   //   .trim()
   //   .stripLow()
