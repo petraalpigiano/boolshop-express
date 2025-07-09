@@ -468,7 +468,7 @@ function checkout(req, res) {
   // Controlla esistenza prodotto e taglia per ogni item del carrello
   const checkStockPromises = cart.map((item) => {
     return new Promise((resolve, reject) => {
-      const sql = `SELECT * 
+      const sql = `SELECT stock, clothes.name AS product_name, sizes.name 
 FROM clothes
 INNER JOIN clothes_sizes
 ON clothes.id = clothes_sizes.cloth_id
@@ -488,7 +488,7 @@ AND sizes.name = ?`;
         if (item.quantity > product.stock) {
           return reject(
             new Error(
-              `Quantità richiesta per "${product.name}" taglia ${item.size} supera la disponibilità (${product.stock})`
+              `Quantità richiesta per "${product.product_name}" taglia ${item.size} supera la disponibilità (${product.stock})`
             )
           );
         }
@@ -503,7 +503,7 @@ AND sizes.name = ?`;
       // Recupera i prezzi reali dei prodotti dal db
       const getPricePromises = cart.map((item) => {
         return new Promise((resolve, reject) => {
-          const sql = `SELECT * 
+          const sql = `SELECT clothes.price, clothes.name AS product_name, sizes.name 
 FROM clothes
 INNER JOIN clothes_sizes
 ON clothes.id = clothes_sizes.cloth_id
@@ -519,9 +519,9 @@ AND sizes.name = ?`;
               );
             }
 
-            const { price, name } = results[0];
+            const { price, product_name } = results[0];
             item.unitPrice = price;
-            item.name = name;
+            item.name = product_name;
             resolve(price * item.quantity); // totale
           });
         });
@@ -532,8 +532,8 @@ AND sizes.name = ?`;
     .then((subtotals) => {
       // Calcola il prezzo totale con spedizione
       const subtotal = subtotals.reduce((acc, val) => acc + val, 0);
-      const shippingCost = subtotal >= 70 ? 0 : 5;
-      const totalPrice = subtotal + shippingCost;
+      const shippingCost = Number((subtotal >= 70 ? 0 : 5).toFixed(2));
+      const totalPrice = Number((subtotal + shippingCost).toFixed(2));
 
       // Inserisco l'ordine nel db
       const sqlCheckout = `
