@@ -24,10 +24,6 @@ router.get("/f-all", filtersValidator, (req, res, next) => {
   if (!errors.isEmpty()) {
     return res.status(422).json({ errors: errors.array() });
   }
-  // const cleanFilters = matchedData(req, {
-  //   locations: ["query", "body", "params"],
-  // });
-  // console.log(cleanFilters);
   allFilters(req, res, next);
 });
 // SHOW/ FILTER SIZES
