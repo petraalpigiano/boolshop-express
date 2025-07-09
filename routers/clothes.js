@@ -1,5 +1,5 @@
 import express from "express";
-import { validationResult, matchedData } from "express-validator";
+import { validationResult } from "express-validator";
 import filtersValidator from "../middlewares/filtersValidator.js";
 import {
   index,

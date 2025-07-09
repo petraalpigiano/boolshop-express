@@ -463,6 +463,7 @@ function checkout(req, res) {
     shipping_cost,
     cart,
   } = req.body;
+  console.log(cart);
 
   const sqlCheckout = `
     INSERT INTO clothes.orders 
@@ -495,6 +496,7 @@ function checkout(req, res) {
       const orderId = results.insertId;
 
       const insertItems = cart.map((item) => {
+        console.log(cart);
         return new Promise((resolve, reject) => {
           const sqlInsertItem = `
                 INSERT INTO clothes_orders (cloth_id, order_id, order_quantity, size)
