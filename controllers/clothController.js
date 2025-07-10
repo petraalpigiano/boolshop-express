@@ -462,6 +462,7 @@ function checkout(req, res) {
     city,
     cap,
     promo_code_id,
+    discount,
     cart,
   } = req.body;
 
@@ -520,7 +521,7 @@ AND sizes.name = ?`;
             }
 
             const { price, product_name } = results[0];
-            item.unitPrice = price;
+            item.price = price;
             item.name = product_name;
             resolve(price * item.quantity); // totale
           });
@@ -586,14 +587,25 @@ AND sizes.name = ?`;
 
           Promise.all(insertItems)
             .then(() => {
-              // Invia email di conferma
+              const baseTotal = cart.reduce((sum, item) => {
+                const price = item.finalPrice ?? item.price;
+                return sum + price * item.quantity;
+              }, 0);
+
+              const discountRate = discount ? discount / 100 : 0;
+              const discountedTotal = baseTotal * (1 - discountRate);
+              const grandTotal = discountedTotal + shippingCost;
+
               return sendOrderEmail({
                 to: mail,
                 subject: "Conferma Ordine - Boolshop",
-                text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${totalPrice}€`,
+                text: `Grazie per il tuo ordine, ${name}! Il tuo numero ordine è #${orderId}. Totale: ${grandTotal.toFixed(
+                  2
+                )}€`,
                 name,
                 orderId,
-                total: totalPrice,
+                total: discountedTotal,
+                shipping_cost: shippingCost,
                 cart,
               });
             })

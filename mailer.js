@@ -21,21 +21,11 @@ function sendOrderEmail({
   shipping_cost,
   cart,
 }) {
-  const productsTable = cart
-    .map((item) => {
-      const price = item.finalPrice ?? item.price;
-      const itemTotal = (item.price * item.quantity).toFixed(2);
-      return `
-        <tr>
-          <td>${item.name}</td>
-          <td>${item.size}</td>
-          <td>${item.quantity}</td>
-          <td>${item.price} €</td>
-          <td>${itemTotal} €</td>
-        </tr>
-      `;
-    })
-    .join("");
+  const parsedShippingCost = !isNaN(parseFloat(shipping_cost))
+    ? parseFloat(shipping_cost)
+    : 0;
+
+  const discountedTotal = total;
 
   const htmlContent = `
   <h2>Hi ${name}!</h2>
@@ -55,7 +45,14 @@ function sendOrderEmail({
       .join("")}
   </ul>
 
-  <p><strong>Total price:</strong> ${total} €</p>
+  <p><strong>Total price (after discount):</strong> ${discountedTotal.toFixed(
+    2
+  )} €</p>
+  <p>Shipping cost: ${parsedShippingCost.toFixed(2)} €</p>
+  <p><strong>Grand total:</strong> ${(
+    discountedTotal + parsedShippingCost
+  ).toFixed(2)} €</p>
+
   <p>Thank you for purchasing from Boolshop! Hope to see you soon!</p>
 `;
 
