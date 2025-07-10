@@ -23,6 +23,7 @@ function sendOrderEmail({
 }) {
   const productsTable = cart
     .map((item) => {
+      const price = item.finalPrice ?? item.price;
       const itemTotal = (item.price * item.quantity).toFixed(2);
       return `
         <tr>
@@ -43,17 +44,14 @@ function sendOrderEmail({
   <h3>Order details:</h3>
   <ul>
     ${cart
-      .map(
-        (item) => `
+      .map((item) => {
+        const price = item.finalPrice ?? item.price;
+        const itemTotal = (price * item.quantity).toFixed(2);
+        return `
         <li>
-          <strong>${item.name}</strong> - Size: ${item.size}, Quantity: ${
-          item.quantity
-        }, Single price: ${item.price}€, Total: ${(
-          item.price * item.quantity
-        ).toFixed(2)}€
-        </li>
-      `
-      )
+          <strong>${item.name}</strong> - Size: ${item.size}, Quantity: ${item.quantity}, Single price: ${price}€, Total: ${itemTotal}€
+        </li>`;
+      })
       .join("")}
   </ul>
 
