@@ -29,7 +29,7 @@ app.listen(APP_PORT, () => {
   console.log(`Il server è in ascolto alla porta: ${APP_PORT}`);
 });
 
-// HOMEPAGE ROUTER
+// HOMEPAGE ROUTER //M PER PATH
 app.use("/", homepageRouter);
 // CLOTHES ROUTER
 app.use("/clothes", clothesRouter);

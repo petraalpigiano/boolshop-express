@@ -483,7 +483,7 @@ AND sizes.name = ?`;
             new Error(`Prodotto ID ${item.id} taglia ${item.size} non trovato.`)
           );
         }
-
+        // Controlla che la quantità del prodotto sia disponibile nel db
         const product = results[0];
         if (item.quantity > product.stock) {
           return reject(
@@ -586,7 +586,27 @@ AND sizes.name = ?`;
 
           Promise.all(insertItems)
             .then(() => {
-              // Invia email di conferma
+              // Scala lo stock disponibile nel db per ogni capo
+              const updateStockPromises = cart.map((item) => {
+                return new Promise((resolve, reject) => {
+                  const sqlUpdateStock = `UPDATE clothes
+          SET stock = stock - ?
+          WHERE id = ?`;
+                  connection.query(
+                    sqlUpdateStock,
+                    [item.quantity, item.id],
+                    (err) => {
+                      if (err) return reject(err);
+                      resolve();
+                    }
+                  );
+                });
+              });
+
+              return Promise.all(updateStockPromises);
+            })
+            // Invia email di conferma
+            .then(() => {
               return sendOrderEmail({
                 to: mail,
                 subject: "Conferma Ordine - Boolshop",

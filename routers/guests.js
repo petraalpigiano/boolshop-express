@@ -8,7 +8,7 @@ import { validationResult } from "express-validator";
 const router = express.Router();
 
 // VARIE ROUTE
-// INDEX/CLOTHES LIST
+// INDEX/CLOTHES LIST //M PER ROUTER
 router.post("/checkout", checkoutValidator, (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
