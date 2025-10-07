@@ -1,13 +1,13 @@
 import mysql from "mysql2";
 import "dotenv/config";
 
-const { APP_PASS } = process.env;
+const { DB_PASS, DB_HOST, DB_USER, DB_NAME } = process.env;
 
 const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: APP_PASS,
-  database: "clothes",
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  database: DB_NAME,
   port: 3306,
 });
 
